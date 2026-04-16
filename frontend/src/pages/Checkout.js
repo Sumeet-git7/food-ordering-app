@@ -12,7 +12,7 @@ function Checkout() {
   const placeOrder = async () => {
     try {
       for (let item of cart) {
-        await axios.post("http://localhost:5002/api/orders/place", {
+        await axios.post("http://32.192.1.214:5002/api/orders/place", {
           user_id: user.id,
           item_id: item.id,
           quantity: 1,

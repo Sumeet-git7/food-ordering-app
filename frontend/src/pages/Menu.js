@@ -24,11 +24,22 @@ function Menu() {
       });
   }, []);
 
+  // 🔥 SMART CART (quantity-based)
   const addToCart = (item) => {
-    const updatedCart = [...cart, item];
+    const existing = cart.find(i => i.id === item.id);
+
+    let updatedCart;
+
+    if (existing) {
+      updatedCart = cart.map(i =>
+        i.id === item.id ? { ...i, quantity: (i.quantity || 1) + 1 } : i
+      );
+    } else {
+      updatedCart = [...cart, { ...item, quantity: 1 }];
+    }
+
     setCart(updatedCart);
     localStorage.setItem("cart", JSON.stringify(updatedCart));
-    alert("🛒 Added to cart!");
   };
 
   const orderItem = async (itemId) => {
@@ -57,21 +68,23 @@ function Menu() {
   return (
     <div style={{ background: "#f8f8f8", minHeight: "100vh" }}>
 
-      {/* 🔥 HEADER */}
+      {/* 🔥 STICKY HEADER */}
       <div style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 1000,
         background: "#fc8019",
         color: "white",
         padding: "15px 30px",
         display: "flex",
         justifyContent: "space-between",
-        alignItems: "center",
-        flexWrap: "wrap"
+        alignItems: "center"
       }}>
         <h2>🍔 FoodHub</h2>
 
         <div style={{ display: "flex", gap: "10px" }}>
           <button onClick={() => navigate("/cart")}>
-            🛒 {cart.length}
+            🛒 {cart.reduce((sum, i) => sum + (i.quantity || 1), 0)}
           </button>
 
           <button onClick={() => navigate("/orders")}>
@@ -80,8 +93,7 @@ function Menu() {
 
           <button
             onClick={() => {
-              localStorage.removeItem("user");
-              localStorage.removeItem("cart");
+              localStorage.clear();
               navigate("/");
             }}
           >
@@ -106,6 +118,26 @@ function Menu() {
         />
       </div>
 
+      {/* 🍔 CATEGORY FILTERS */}
+      <div style={{ textAlign: "center", marginBottom: "15px" }}>
+        {["All", "Pizza", "Burger", "Pasta"].map(cat => (
+          <button
+            key={cat}
+            onClick={() => setSearch(cat === "All" ? "" : cat)}
+            style={{
+              margin: "5px",
+              padding: "8px 12px",
+              borderRadius: "20px",
+              border: "none",
+              background: "#eee",
+              cursor: "pointer"
+            }}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
       {/* ⏳ Loading */}
       {loading ? (
         <h3 style={{ textAlign: "center" }}>Loading delicious food...</h3>
@@ -124,92 +156,107 @@ function Menu() {
             .filter(item =>
               item.item_name.toLowerCase().includes(search.toLowerCase())
             )
-            .map(item => (
+            .map(item => {
 
-              <div key={item.id} style={{
-                background: "white",
-                borderRadius: "12px",
-                overflow: "hidden",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                transition: "0.3s"
-              }}>
+              const cartItem = cart.find(i => i.id === item.id);
 
-                {/* 🍕 IMAGE */}
-                <img
-                  src={item.image_url}
-                  alt={item.item_name}
-                  style={{
-                    width: "100%",
-                    height: "180px",
-                    objectFit: "cover"
-                  }}
-                  onError={(e) => {
-                    e.target.src =
-                      "https://via.placeholder.com/300x200?text=Food";
-                  }}
-                />
+              return (
+                <div key={item.id} style={{
+                  background: "white",
+                  borderRadius: "12px",
+                  overflow: "hidden",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
+                }}>
 
-                {/* 📄 DETAILS */}
-                <div style={{ padding: "15px" }}>
-                  <h3>{item.item_name}</h3>
-
-                  {/* ⭐ Fake rating + delivery */}
-                  <p style={{ color: "#777", fontSize: "14px" }}>
-                    ⭐ 4.{Math.floor(Math.random() * 5)} • 30 mins
-                  </p>
-
-                  <h4 style={{ color: "#fc8019" }}>₹{item.price}</h4>
-
-                  {/* 🛒 Add to Cart */}
-                  <button
-                    onClick={() => addToCart(item)}
+                  <img
+                    src={item.image_url}
+                    alt={item.item_name}
                     style={{
-                      background: "#fc8019",
-                      color: "white",
-                      border: "none",
-                      padding: "10px",
                       width: "100%",
-                      borderRadius: "6px",
-                      marginTop: "10px",
-                      cursor: "pointer"
+                      height: "180px",
+                      objectFit: "cover"
                     }}
-                  >
-                    Add to Cart 🛒
-                  </button>
+                    onError={(e) => {
+                      e.target.src =
+                        "https://via.placeholder.com/300x200?text=Food";
+                    }}
+                  />
 
-                  {/* 📦 Order */}
-                  <button
-                    onClick={() => orderItem(item.id)}
-                    style={{
-                      background: "#282c3f",
-                      color: "white",
-                      border: "none",
-                      padding: "10px",
-                      width: "100%",
-                      borderRadius: "6px",
-                      marginTop: "10px",
-                      cursor: "pointer"
-                    }}
-                  >
-                    Order Now
-                  </button>
+                  <div style={{ padding: "15px" }}>
+                    <h3>{item.item_name}</h3>
+
+                    <p style={{ color: "#777", fontSize: "14px" }}>
+                      ⭐ 4.{Math.floor(Math.random() * 5)} • 30 mins
+                    </p>
+
+                    <h4 style={{ color: "#fc8019" }}>₹{item.price}</h4>
+
+                    {/* 🛒 BUTTON / QUANTITY */}
+                    {cartItem ? (
+                      <div style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginTop: "10px"
+                      }}>
+                        <button onClick={() => addToCart(item)}>+</button>
+                        <span>{cartItem.quantity}</span>
+                        <button
+                          onClick={() => {
+                            const updated = cart.map(i =>
+                              i.id === item.id
+                                ? { ...i, quantity: i.quantity - 1 }
+                                : i
+                            ).filter(i => i.quantity > 0);
+
+                            setCart(updated);
+                            localStorage.setItem("cart", JSON.stringify(updated));
+                          }}
+                        >
+                          -
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => addToCart(item)}
+                        style={{
+                          background: "#fc8019",
+                          color: "white",
+                          border: "none",
+                          padding: "10px",
+                          width: "100%",
+                          borderRadius: "6px",
+                          marginTop: "10px",
+                          cursor: "pointer"
+                        }}
+                      >
+                        Add to Cart 🛒
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => orderItem(item.id)}
+                      style={{
+                        background: "#282c3f",
+                        color: "white",
+                        border: "none",
+                        padding: "10px",
+                        width: "100%",
+                        borderRadius: "6px",
+                        marginTop: "10px",
+                        cursor: "pointer"
+                      }}
+                    >
+                      Order Now
+                    </button>
+
+                  </div>
                 </div>
-
-              </div>
-            ))}
+              );
+            })}
 
         </div>
       )}
-
-      {/* 🛒 Footer Cart Summary */}
-      <div style={{
-        textAlign: "center",
-        padding: "15px",
-        background: "#fff",
-        borderTop: "1px solid #ddd"
-      }}>
-        <h3>🛒 Cart Items: {cart.length}</h3>
-      </div>
 
     </div>
   );

@@ -159,3 +159,22 @@ button {
   width: 300px;
   border-radius: 10px;
 }
+
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+}
+
+button {
+  font-size: 14px;
+}
+
+@media (max-width: 600px) {
+  h2 {
+    font-size: 18px;
+  }
+
+  input {
+    width: 90% !important;
+  }
+}

@@ -13,7 +13,7 @@ function Menu() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get("http://32.192.1.214:5001/api/menu")
+    axios.get("http://3.91.45.136:5001/api/menu")
       .then(res => {
         setMenu(res.data);
         setLoading(false);
@@ -52,7 +52,7 @@ function Menu() {
     }
 
     try {
-      await axios.post("http://32.192.1.214:5002/api/orders/place", {
+      await axios.post("http://3.91.45.136:5002/api/orders/place", {
         user_id: user.id,
         item_id: itemId,
         quantity: 1,

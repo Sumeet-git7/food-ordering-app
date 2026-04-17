@@ -5,7 +5,7 @@ function Orders() {
   const [orders, setOrders] = useState([]);
 
   useEffect(() => {
-    axios.get("http://32.192.1.214:5002/api/orders")
+    axios.get("http://3.91.45.136:5002/api/orders")
       .then(res => setOrders(res.data))
       .catch(err => console.error(err));
   }, []);

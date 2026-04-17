@@ -15,7 +15,7 @@ function Register() {
     }
 
     try {
-      await axios.post("http://32.192.1.214:5000/api/users/register", {
+      await axios.post("http://3.91.45.136:5000/api/users/register", {
         name,
         email,
         password,
